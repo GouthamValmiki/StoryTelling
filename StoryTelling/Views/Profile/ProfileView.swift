@@ -20,6 +20,7 @@ struct ProfileView: View {
                         stats
                         badgesSection
                         languagePicker
+                        voiceSettings
                         streakSection
                         parentMode
                     }
@@ -112,6 +113,10 @@ struct ProfileView: View {
             Spacer()
             Text("Keep exploring!").font(.caption).foregroundColor(.white.opacity(0.7))
         }.padding(14).background(AppColors.card, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var voiceSettings: some View {
+        NaturalVoiceSettingsView()
     }
 
     private var parentMode: some View {

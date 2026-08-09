@@ -20,34 +20,36 @@ enum VoicePersona: String, CaseIterable, Identifiable {
     }
     var pitch: Float {
         switch self {
-        case .female: return 1.15
-        case .male: return 0.95
-        case .kid: return 1.35
-        case .grandma: return 1.05
-        case .grandpa: return 0.85
+        case .female: return 1.08
+        case .male: return 0.92
+        case .kid: return 1.28
+        case .grandma: return 1.02
+        case .grandpa: return 0.82
         }
     }
     var rateFactor: Float {
         switch self {
         case .female: return 0.50
         case .male: return 0.48
-        case .kid: return 0.45
-        case .grandma: return 0.38
-        case .grandpa: return 0.40
+        case .kid: return 0.44
+        case .grandma: return 0.36
+        case .grandpa: return 0.38
         }
     }
+    /// Pick the most natural enhanced voice on device for this persona
     func voice(for languageCode: String) -> AVSpeechSynthesisVoice? {
-        // Prefer enhanced/comfort voice if available
-        let voices = AVSpeechSynthesisVoice.speechVoices().filter { $0.language == languageCode }
-        if voices.isEmpty { return AVSpeechSynthesisVoice(language: languageCode) }
-        // Map persona to voice gender approximation
+        let all = AVSpeechSynthesisVoice.speechVoices().filter { $0.language == languageCode }
+        if all.isEmpty { return AVSpeechSynthesisVoice(language: languageCode) }
+        // Prefer enhanced quality if available (iOS 16+ voices are much more natural)
+        let enhanced = all.filter { $0.quality == .enhanced }
+        let pool = enhanced.isEmpty ? all : enhanced
         switch self {
         case .female, .grandma:
-            return voices.first(where: { $0.name.lowercased().contains("female") || $0.name.lowercased().contains("samantha") }) ?? voices.first
+            return pool.first(where: { $0.name.lowercased().contains("female") || $0.name.lowercased().contains("samantha") || $0.name.lowercased().contains("karen") || $0.name.lowercased().contains("premium") }) ?? pool.first
         case .male, .grandpa:
-            return voices.first(where: { $0.name.lowercased().contains("male") || $0.name.lowercased().contains("aaron") }) ?? voices.first
+            return pool.first(where: { $0.name.lowercased().contains("aaron") || $0.name.lowercased().contains("daniel") || $0.name.lowercased().contains("male") }) ?? pool.first
         case .kid:
-            return voices.first // pitch will simulate kid
+            return pool.first
         }
     }
 }
@@ -60,80 +62,126 @@ final class AudioService: NSObject, ObservableObject {
     @Published var persona: VoicePersona {
         didSet { UserDefaults.standard.set(persona.rawValue, forKey: "voicePersona") }
     }
+    @Published var useNaturalCloud = UserDefaults.standard.bool(forKey: "useNaturalCloud")
     @Published var availableVoices: [AVSpeechSynthesisVoice] = []
 
     private var synthesizer = AVSpeechSynthesizer()
+    private var audioPlayer: AVAudioPlayer?
     private var currentText: String = ""
     private var currentLangCode: String = "en-US"
+    private var cloudTask: Task<Void, Never>?
 
     override init() {
         let saved = UserDefaults.standard.string(forKey: "voicePersona").flatMap { VoicePersona(rawValue: $0) } ?? .female
         self.persona = saved
         super.init()
         synthesizer.delegate = self
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: .duckOthers)
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [.duckOthers, .defaultToSpeaker])
         try? AVAudioSession.sharedInstance().setActive(true)
         availableVoices = AVSpeechSynthesisVoice.speechVoices()
+        // Hint to user to download enhanced voices
+        NotificationCenter.default.addObserver(forName: AVSpeechSynthesisVoice.voiceAvailabilityDidChangeNotification, object: nil, queue: .main) { _ in
+            Task { @MainActor in self.availableVoices = AVSpeechSynthesisVoice.speechVoices() }
+        }
     }
 
+    /// Public entry — tries natural cloud first if enabled, falls back to enhanced local
     func speak(_ text: String, language: String = "en-US", rate: Float? = nil) {
         stop()
         currentText = text
         currentLangCode = language
-        // Telugu fallback: if te-IN voice not available on device, use en-US with transliterated clarity
-        let hasTelugu = AVSpeechSynthesisVoice.speechVoices().contains { $0.language == "te-IN" }
-        let effectiveLang = (language == "te-IN" && !hasTelugu) ? "en-US" : language
-        let baseRate = rate ?? persona.rateFactor
 
+        // If natural cloud enabled and key exists, try cloud async
+        if useNaturalCloud {
+            cloudTask?.cancel()
+            cloudTask = Task { [weak self] in
+                do {
+                    let persona = await MainActor.run { self?.persona ?? .female }
+                    let url = try await NaturalTTSService.shared.synthesize(text: text, language: language, persona: persona)
+                    await MainActor.run { self?.playCloudFile(url: url) }
+                    return
+                } catch {
+                    // Cloud failed or offline → fallback to local enhanced
+                    await MainActor.run { self?.speakLocal(text: text, language: language, rate: rate) }
+                }
+            }
+            // Show playing immediately
+            isPlaying = true
+            return
+        }
+        speakLocal(text: text, language: language, rate: rate)
+    }
+
+    private func speakLocal(_ text: String, language: String, rate: Float?) {
+        let hasTelugu = AVSpeechSynthesisVoice.speechVoices().contains { $0.language == "te-IN" }
+        let effectiveLang = (language == "te-IN" && !hasTelugu) ? "en-IN" : language // en-IN accent more natural for India
+        let baseRate = rate ?? persona.rateFactor
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = persona.voice(for: effectiveLang) ?? AVSpeechSynthesisVoice(language: effectiveLang)
-        // slower, clearer for kids — extra slow for Telugu for fluency
-        let langFactor: Float = (effectiveLang == "te-IN") ? 0.82 : 1.0
+        let langFactor: Float = (effectiveLang == "te-IN") ? 0.80 : 1.0
         utterance.rate = baseRate * currentRate * langFactor
         utterance.pitchMultiplier = persona.pitch
-        utterance.volume = 0.95
-        utterance.preUtteranceDelay = 0.15
+        utterance.volume = 0.98
+        utterance.preUtteranceDelay = 0.12
+        utterance.postUtteranceDelay = 0.1
         isPlaying = true
         synthesizer.speak(utterance)
     }
 
-    func setRate(_ rate: Float) {
-        currentRate = rate
-        if isPlaying {
-            speak(currentText, language: currentLangCode)
+    private func playCloudFile(url: URL) {
+        do {
+            audioPlayer?.stop()
+            audioPlayer = try AVAudioPlayer(contentsOf: url)
+            audioPlayer?.prepareToPlay()
+            audioPlayer?.play()
+            // isPlaying will be cleared when player stops via delegate timer
+            // Simple: mark playing and auto-clear after duration
+            if let duration = audioPlayer?.duration {
+                Task { [weak self] in
+                    try? await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000) + 300_000_000)
+                    await MainActor.run { self?.isPlaying = false }
+                }
+            }
+        } catch {
+            speakLocal(text: currentText, language: currentLangCode, rate: nil)
         }
     }
 
+    func setRate(_ rate: Float) {
+        currentRate = rate
+        if isPlaying { speak(currentText, language: currentLangCode) }
+    }
     func setPersona(_ p: VoicePersona) {
         persona = p
         if isPlaying { speak(currentText, language: currentLangCode) }
     }
-
+    func setNatural(_ enabled: Bool) {
+        useNaturalCloud = enabled
+        UserDefaults.standard.set(enabled, forKey: "useNaturalCloud")
+    }
     func stop() {
+        cloudTask?.cancel()
+        cloudTask = nil
         synthesizer.stopSpeaking(at: .immediate)
+        audioPlayer?.stop()
+        audioPlayer = nil
         isPlaying = false
         highlightedRange = nil
     }
-
     func pause() {
         synthesizer.pauseSpeaking(at: .word)
+        audioPlayer?.pause()
         isPlaying = false
     }
-
     func resume() {
-        synthesizer.continueSpeaking()
-        isPlaying = true
+        if audioPlayer != nil { audioPlayer?.play(); isPlaying = true }
+        else { synthesizer.continueSpeaking(); isPlaying = true }
     }
-
     func toggle(text: String, lang: AppLanguage) {
         if isPlaying { pause() }
-        else if synthesizer.isPaused { resume() }
+        else if synthesizer.isPaused || audioPlayer?.isPlaying == false { resume() }
         else {
-            let hasTe = AVSpeechSynthesisVoice.speechVoices().contains { $0.language == "te-IN" }
-            let code: String
-            if lang == .telugu && hasTe { code = "te-IN" }
-            else if lang == .telugu && !hasTe { code = "te-IN" } // will fallback inside speak
-            else { code = "en-US" }
+            let code = lang == .telugu ? "te-IN" : "en-IN" // en-IN for natural Indian English
             speak(text, language: code)
         }
     }
