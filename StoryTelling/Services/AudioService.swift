@@ -74,6 +74,11 @@ final class AudioService: NSObject, ObservableObject {
     override init() {
         let saved = UserDefaults.standard.string(forKey: "voicePersona").flatMap { VoicePersona(rawValue: $0) } ?? .female
         self.persona = saved
+        // Default to natural cloud ON (as requested: Sarvam for Telugu, OpenAI for English)
+        if UserDefaults.standard.object(forKey: "useNaturalCloud") == nil {
+            UserDefaults.standard.set(true, forKey: "useNaturalCloud")
+            self.useNaturalCloud = true
+        }
         super.init()
         synthesizer.delegate = self
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [.duckOthers, .defaultToSpeaker])

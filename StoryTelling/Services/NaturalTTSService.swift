@@ -17,9 +17,22 @@ actor NaturalTTSService {
     private var cache: [String: URL] = [:]
 
     func currentProvider() -> Provider {
-        if let key = UserDefaults.standard.string(forKey: "openai_api_key"), !key.isEmpty { return .openAI }
-        if let key = UserDefaults.standard.string(forKey: "sarvam_api_key"), !key.isEmpty { return .sarvam }
-        return .localEnhanced
+        // Default routing: Sarvam for Telugu, OpenAI for English — as requested
+        return provider(for: "en-IN")
+    }
+    func provider(for language: String) -> Provider {
+        let hasOpenAI = !(UserDefaults.standard.string(forKey: "openai_api_key") ?? "").isEmpty
+        let hasSarvam = !(UserDefaults.standard.string(forKey: "sarvam_api_key") ?? "").isEmpty
+        if language == "te-IN" {
+            if hasSarvam { return .sarvam }
+            if hasOpenAI { return .openAI } // fallback to OpenAI if Sarvam not set
+            return .localEnhanced
+        } else {
+            // English / en-IN
+            if hasOpenAI { return .openAI }
+            if hasSarvam { return .sarvam } // Sarvam also does en-IN well
+            return .localEnhanced
+        }
     }
 
     // Map persona + language to cloud voice name
@@ -46,13 +59,13 @@ actor NaturalTTSService {
             return cached
         }
 
-        switch currentProvider() {
+        switch provider(for: language) {
         case .openAI:
             return try await synthesizeOpenAI(text: text, language: language, persona: persona, cacheKey: cacheKey)
         case .sarvam:
             return try await synthesizeSarvam(text: text, language: language, persona: persona, cacheKey: cacheKey)
         case .localEnhanced:
-            throw URLError(.notConnectedToInternet) // caller will fallback to AVSpeechSynthesizer
+            throw URLError(.notConnectedToInternet) // caller will fallback to AVSpeechSynthesizer enhanced
         }
     }
 
