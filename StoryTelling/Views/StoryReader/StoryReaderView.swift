@@ -110,7 +110,7 @@ struct StoryReaderView: View {
     }
 
     private var autoToggle: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 8) {
             Toggle(isOn: Binding(
                 get: { vm.isAutoPlay },
                 set: { newVal in
@@ -123,12 +123,25 @@ struct StoryReaderView: View {
                 }
             )) { Label("Read to Me", systemImage: "headphones") }.tint(AppColors.accent).foregroundColor(.white)
                 .onChange(of: vm.currentIndex) { _, _ in
-                    // when auto-playing, speak new page automatically
                     if vm.isAutoPlay {
                         audio.speak(vm.currentPage.narrationText, language: appState.language == .telugu ? "te-IN" : "en-US")
                     }
                 }
                 .onDisappear { vm.stopAuto(); audio.stop() }
+            // Voice persona picker — Male/Female/Kid/Grandma/Grandpa
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(VoicePersona.allCases) { p in
+                        Button(action: { audio.setPersona(p) }) {
+                            Text("\(p.emoji) \(p.rawValue)")
+                                .font(.caption2.weight(.bold))
+                                .foregroundColor(audio.persona == p ? .black : .white)
+                                .padding(.horizontal, 10).padding(.vertical, 6)
+                                .background(audio.persona == p ? Color.white : Color.white.opacity(0.15), in: Capsule())
+                        }
+                    }
+                }
+            }
             HStack(spacing: 8) {
                 Text("Speed").font(.caption).foregroundColor(.white.opacity(0.8))
                 ForEach([0.75,1.0,1.25,1.5], id: \.self) { s in

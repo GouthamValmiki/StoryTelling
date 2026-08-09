@@ -16,6 +16,7 @@ struct RootView: View {
         TabView {
             HomeView().tabItem { Label("Home", systemImage: "house.fill") }
             ExploreView().tabItem { Label("Explore", systemImage: "magnifyingglass") }
+            AIStoryCreatorView().tabItem { Label("AI Magic", systemImage: "wand.and.stars") }
             FavoritesView().tabItem { Label("Favorites", systemImage: "heart.fill") }
             ProfileView().tabItem { Label("Profile", systemImage: "person.fill") }
         }

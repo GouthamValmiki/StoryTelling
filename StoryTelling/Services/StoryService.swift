@@ -282,6 +282,76 @@ enum MockData {
             discoverItems: ["Grey village","Colors","Friendship","Rainbow"],
             discoverEmojis: ["🏘️","🎨","🤝","🌈"],
             languageSupport: ["en","te"]
+        ),
+        // MARK: — Real daily-life stories
+        Story(
+            id: "ammas_tiffin",
+            title: "Amma's Tiffin Box",
+            titleTe: "అమ్మ టిఫిన్ బాక్స్",
+            description: "Arjun forgets his tiffin; sharing and thanking make the day happy. A real school story.",
+            descriptionTe: "అర్జున్ టిఫిన్ మరచిపోతాడు, పంచుకోవడం ఆనందం ఇస్తుంది.",
+            category: .friendship,
+            ageRange: "4-8",
+            durationMinutes: 6,
+            rating: 4.9,
+            coverEmoji: "🍱",
+            coverGradient: ["FF6F00","FFD54F"],
+            isFeatured: false,
+            isStoryOfDay: false,
+            pages: [
+                StoryPage(id: "t1", index: 0, text: "Arjun ran to school and left his tiffin on the table. At lunch, his tummy growled.", textTe: "అర్జున్ టిఫిన్ టేబుల్‌పై మరచిపోయాడు, ఆకలి వేసింది.", illustrationName: "tiffin1", narrationText: "Arjun left his tiffin on the table, his tummy growled.", choice: nil, isEnding: false),
+                StoryPage(id: "t2", index: 1, text: "His friend Sara said, 'We can share my chapati and pickle. Amma packed extra!'", textTe: "సారా అంది, నా చపాతీ పంచుకుందాం.", illustrationName: "tiffin2", narrationText: "Sara said we can share my chapati and pickle.", choice: nil, isEnding: false),
+                StoryPage(id: "t3", index: 2, text: "They ate together, laughed, and promised to remind each other. Sharing felt better than eating alone.", textTe: "కలిసి తిని నవ్వారు, పంచుకోవడం మంచిది.", illustrationName: "tiffin3", narrationText: "They ate together and sharing felt better.", choice: nil, isEnding: true)
+            ],
+            discoverItems: ["Packed tiffin","Sharing food","Thank you","Friendship"],
+            discoverEmojis: ["🍱","🤝","🙏","😊"],
+            languageSupport: ["en","te"]
+        ),
+        Story(
+            id: "helping_tata",
+            title: "Helping Tata in the Field",
+            titleTe: "తాతకు పొలంలో సహాయం",
+            description: "A village morning where kids help grandpa carry water and learn respect for hard work.",
+            descriptionTe: "గ్రామ ఉదయం, పిల్లలు తాతకు నీళ్లు మోయడంలో సహాయం చేస్తారు.",
+            category: .learning,
+            ageRange: "5-9",
+            durationMinutes: 7,
+            rating: 4.8,
+            coverEmoji: "🌾",
+            coverGradient: ["2E7D32","AED581"],
+            isFeatured: false,
+            isStoryOfDay: false,
+            pages: [
+                StoryPage(id: "v1", index: 0, text: "Early morning, Tata walks to the field with a pot of water. Ravi wants to help.", textTe: "తెల్లవారుజామున తాత నీళ్ల చెంబుతో పొలానికి వెళ్తాడు.", illustrationName: "field1", narrationText: "Tata walks to the field, Ravi wants to help.", choice: nil, isEnding: false),
+                StoryPage(id: "v2", index: 1, text: "Ravi carries the small bottle carefully without spilling. Tata smiles, 'Chala manchidi!'", textTe: "రవి నీళ్లు ఒలకకుండా జాగ్రత్తగా మోస్తాడు.", illustrationName: "field2", narrationText: "Ravi carries water carefully.", choice: nil, isEnding: false),
+                StoryPage(id: "v3", index: 2, text: "They rest under a neem tree, drink water, and Tata tells how seeds become food. Hard work is prayer.", textTe: "వేప చెట్టు కింద కూర్చుని తాత విత్తనాల కథ చెప్తాడు.", illustrationName: "field3", narrationText: "They rest and Tata tells how seeds become food.", choice: nil, isEnding: true)
+            ],
+            discoverItems: ["Village field","Carrying water","Neem tree","Respect for work"],
+            discoverEmojis: ["🌾","💧","🌳","🙏"],
+            languageSupport: ["en","te"]
+        ),
+        Story(
+            id: "lost_pencil",
+            title: "The Lost Pencil",
+            titleTe: "పోయిన పెన్సిల్",
+            description: "When honesty matters more than a new pencil. A daily school moral story.",
+            descriptionTe: "కొత్త పెన్సిల్ కంటే నిజాయితీ ముఖ్యం.",
+            category: .learning,
+            ageRange: "4-7",
+            durationMinutes: 6,
+            rating: 4.9,
+            coverEmoji: "✏️",
+            coverGradient: ["37474F","90A4AE"],
+            isFeatured: false,
+            isStoryOfDay: false,
+            pages: [
+                StoryPage(id: "p1", index: 0, text: "Meena found a shiny pencil under her desk. It had someone's name on it — Srinu.", textTe: "మీనా బెంచీ కింద మెరిసే పెన్సిల్ కనుగొంది, దానిపై శ్రీను పేరు ఉంది.", illustrationName: "pencil1", narrationText: "Meena found a shiny pencil with Srinu's name.", choice: nil, isEnding: false),
+                StoryPage(id: "p2", index: 1, text: "She thought, 'I like it, but Srinu will be sad.' She decides to give it back.", textTe: "నాకు నచ్చింది కానీ శ్రీను బాధపడతాడు అనుకుంది.", illustrationName: "pencil2", narrationText: "She decides to give it back.", choice: nil, isEnding: false),
+                StoryPage(id: "p3", index: 2, text: "Srinu smiles and they become good friends. Teacher says, 'Honesty is the best habit.'", textTe: "శ్రీను నవ్వి స్నేహితులు అయ్యారు, నిజాయితీ మంచి అలవాటు.", illustrationName: "pencil3", narrationText: "Honesty is the best habit.", choice: nil, isEnding: true)
+            ],
+            discoverItems: ["Found pencil","Honesty","Friendship","Teacher's praise"],
+            discoverEmojis: ["✏️","💛","🤝","👩‍🏫"],
+            languageSupport: ["en","te"]
         )
     ]
 }

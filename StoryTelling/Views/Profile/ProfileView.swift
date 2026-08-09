@@ -92,7 +92,13 @@ struct ProfileView: View {
                     Button(action: { vm.updateLanguage(lang); appState.language = lang }) {
                         HStack { Text(lang.flag); Text(lang.displayName) }
                             .foregroundColor(.white).padding(.horizontal, 14).padding(.vertical, 8)
-                            .background(appState.language == lang ? AppColors.gradientAccent : Color.white.opacity(0.12), in: Capsule())
+                            .background {
+                                if appState.language == lang {
+                                    Capsule().fill(AppColors.gradientAccent)
+                                } else {
+                                    Capsule().fill(Color.white.opacity(0.12))
+                                }
+                            }
                     }
                 }
             }

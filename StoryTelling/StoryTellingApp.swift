@@ -15,10 +15,10 @@ struct StoryTellingApp: App {
         }
 
         // Explicit store URL in Application Support — more stable than default location
-        let storeURL = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
-            .appendingPathComponent("WonderTales.store")
+        let storeURL: URL = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
+            .appendingPathComponent("WonderTales.store") ?? fm.temporaryDirectory.appendingPathComponent("WonderTales.store")
 
-        let config = ModelConfiguration(schema: schema, url: storeURL, allowsSave: true)
+        let config = ModelConfiguration(schema: schema, url: storeURL)
 
         do {
             let container = try ModelContainer(for: schema, configurations: [config])
