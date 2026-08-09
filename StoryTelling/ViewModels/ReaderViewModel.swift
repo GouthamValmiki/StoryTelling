@@ -73,22 +73,38 @@ final class ReaderViewModel: ObservableObject {
         if currentPage.isEnding { showEnding = true; storage?.markCompleted(storyId: story.id) }
     }
 
-    // Auto play
-    func toggleAuto() {
-        isAutoPlay.toggle()
-        if isAutoPlay { startAuto() } else { autoTask?.cancel() }
+    // Auto play - does NOT toggle isAutoPlay itself; caller sets isAutoPlay
+    func setAutoPlay(_ enabled: Bool) {
+        isAutoPlay = enabled
+        if enabled { startAuto() } else { stopAuto() }
+    }
+
+    func stopAuto() {
+        autoTask?.cancel()
+        autoTask = nil
     }
 
     private func startAuto() {
         autoTask?.cancel()
         autoTask = Task {
-            while isAutoPlay && !Task.isCancelled {
+            while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: 4_000_000_000)
                 if Task.isCancelled { break }
                 await MainActor.run {
+                    // Pause on choice pages — user must pick
+                    guard !self.showEnding else {
+                        self.isAutoPlay = false
+                        self.stopAuto()
+                        return
+                    }
                     if self.currentPage.choice == nil {
                         self.next()
-                        if self.showEnding { self.isAutoPlay = false }
+                        if self.showEnding {
+                            self.isAutoPlay = false
+                            self.stopAuto()
+                        }
+                    } else {
+                        // on choice page, keep waiting without looping aggressively
                     }
                 }
             }

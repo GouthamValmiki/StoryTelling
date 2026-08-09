@@ -111,8 +111,24 @@ struct StoryReaderView: View {
 
     private var autoToggle: some View {
         VStack(spacing: 6) {
-            Toggle(isOn: $vm.isAutoPlay) { Label("Read to Me", systemImage: "headphones") }.tint(AppColors.accent).foregroundColor(.white)
-                .onChange(of: vm.isAutoPlay) { _, v in if v { vm.toggleAuto() } else { vm.toggleAuto() } }
+            Toggle(isOn: Binding(
+                get: { vm.isAutoPlay },
+                set: { newVal in
+                    vm.setAutoPlay(newVal)
+                    if newVal {
+                        audio.speak(vm.currentPage.narrationText, language: appState.language == .telugu ? "te-IN" : "en-US")
+                    } else {
+                        audio.stop()
+                    }
+                }
+            )) { Label("Read to Me", systemImage: "headphones") }.tint(AppColors.accent).foregroundColor(.white)
+                .onChange(of: vm.currentIndex) { _, _ in
+                    // when auto-playing, speak new page automatically
+                    if vm.isAutoPlay {
+                        audio.speak(vm.currentPage.narrationText, language: appState.language == .telugu ? "te-IN" : "en-US")
+                    }
+                }
+                .onDisappear { vm.stopAuto(); audio.stop() }
             HStack(spacing: 8) {
                 Text("Speed").font(.caption).foregroundColor(.white.opacity(0.8))
                 ForEach([0.75,1.0,1.25,1.5], id: \.self) { s in
