@@ -8,7 +8,7 @@ struct StoryPage: Identifiable, Codable, Equatable, Hashable {
     let textTe: String?
     let illustrationName: String
     let narrationText: String
-    let narrationTextTe: String? = nil
+    var narrationTextTe: String? = nil
     let choice: StoryChoice?
     let isEnding: Bool
 

@@ -84,10 +84,6 @@ final class AudioService: NSObject, ObservableObject {
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [.duckOthers, .defaultToSpeaker])
         try? AVAudioSession.sharedInstance().setActive(true)
         availableVoices = AVSpeechSynthesisVoice.speechVoices()
-        // Hint to user to download enhanced voices
-        NotificationCenter.default.addObserver(forName: AVSpeechSynthesisVoice.voiceAvailabilityDidChangeNotification, object: nil, queue: .main) { _ in
-            Task { @MainActor in self.availableVoices = AVSpeechSynthesisVoice.speechVoices() }
-        }
     }
 
     /// Public entry — tries natural cloud first if enabled, falls back to enhanced local
@@ -107,14 +103,14 @@ final class AudioService: NSObject, ObservableObject {
                     return
                 } catch {
                     // Cloud failed or offline → fallback to local enhanced
-                    await MainActor.run { self?.speakLocal(text: text, language: language, rate: rate) }
+                    await MainActor.run { self?.speakLocal( text, language: language, rate: rate) }
                 }
             }
             // Show playing immediately
             isPlaying = true
             return
         }
-        speakLocal(text: text, language: language, rate: rate)
+        speakLocal( text, language: language, rate: rate)
     }
 
     private func speakLocal(_ text: String, language: String, rate: Float?) {
@@ -148,7 +144,7 @@ final class AudioService: NSObject, ObservableObject {
                 }
             }
         } catch {
-            speakLocal(text: currentText, language: currentLangCode, rate: nil)
+            speakLocal( currentText, language: currentLangCode, rate: nil)
         }
     }
 

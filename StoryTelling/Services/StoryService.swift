@@ -21,7 +21,7 @@ enum StoryServiceError: Error, LocalizedError {
     }
 }
 
-actor MockStoryService: StoryServiceProtocol {
+final class MockStoryService: StoryServiceProtocol {
     private var cached: [Story]?
 
     func fetchStories() async throws -> [Story] {

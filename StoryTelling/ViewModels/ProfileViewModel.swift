@@ -12,7 +12,7 @@ final class ProfileViewModel: ObservableObject {
         storage = s
         profile = s.ensureProfile()
     }
-    func updateName(_ name: String) { profile?.name = name; try? storage?.fetchProfile().map { _ in } }
+    func updateName(_ name: String) { profile?.name = name }
     func updateAvatar(_ emoji: String) { profile?.avatarEmoji = emoji }
     func updateLanguage(_ lang: AppLanguage) { profile?.preferredLanguageRaw = lang.rawValue }
     var badges: [Badge] {
