@@ -114,6 +114,9 @@ final class ReaderViewModel: ObservableObject {
     func localizedText(_ page: StoryPage, lang: AppLanguage) -> String {
         lang == .telugu ? (page.textTe ?? page.text) : page.text
     }
+    func localizedNarration(_ page: StoryPage, lang: AppLanguage) -> String {
+        page.narration(for: lang)
+    }
     func localizedChoicePrompt(_ choice: StoryChoice, lang: AppLanguage) -> String {
         lang == .telugu ? (choice.promptTe ?? choice.prompt) : choice.prompt
     }

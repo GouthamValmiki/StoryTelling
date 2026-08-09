@@ -8,12 +8,18 @@ struct StoryPage: Identifiable, Codable, Equatable, Hashable {
     let textTe: String?
     let illustrationName: String
     let narrationText: String
+    let narrationTextTe: String? = nil
     let choice: StoryChoice?
     let isEnding: Bool
 
     var localizedText: String {
         // language handled in ViewModel
         text
+    }
+    func narration(for lang: AppLanguage) -> String {
+        if lang == .telugu, let te = narrationTextTe, !te.isEmpty { return te }
+        if lang == .telugu, let te = textTe, !te.isEmpty { return te }
+        return narrationText
     }
 }
 

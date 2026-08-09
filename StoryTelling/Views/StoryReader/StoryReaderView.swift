@@ -66,7 +66,7 @@ struct StoryReaderView: View {
                 .padding(16)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18))
                 .onTapGesture {
-                    audio.toggle(text: page.narrationText, lang: appState.language)
+                    audio.toggle(text: vm.localizedNarration(page, lang: appState.language), lang: appState.language)
                 }
             if let choice = page.choice {
                 VStack(spacing: 10) {
@@ -101,7 +101,7 @@ struct StoryReaderView: View {
     private var controls: some View {
         HStack(spacing: 18) {
             Button(action: { vm.prev(); audio.stop() }) { Image(systemName: "chevron.left.circle.fill").font(.largeTitle).foregroundColor(.white.opacity(vm.canGoPrev ? 1 : 0.3)) }.disabled(!vm.canGoPrev)
-            Button(action: { audio.toggle(text: vm.currentPage.narrationText, lang: appState.language) }) {
+            Button(action: { audio.toggle(text: vm.localizedNarration(vm.currentPage, lang: appState.language), lang: appState.language) }) {
                 Image(systemName: audio.isPlaying ? "pause.circle.fill" : "play.circle.fill").font(.system(size: 56)).foregroundColor(.white)
             }
             .overlay { if audio.isPlaying { Text("〰️〰️〰️").font(.caption).offset(y: 40).foregroundColor(.white.opacity(0.8)) } }
@@ -116,7 +116,7 @@ struct StoryReaderView: View {
                 set: { newVal in
                     vm.setAutoPlay(newVal)
                     if newVal {
-                        audio.speak(vm.currentPage.narrationText, language: appState.language == .telugu ? "te-IN" : "en-US")
+                        audio.speak(vm.localizedNarration(vm.currentPage, lang: appState.language), language: appState.language == .telugu ? "te-IN" : "en-US")
                     } else {
                         audio.stop()
                     }
@@ -124,7 +124,7 @@ struct StoryReaderView: View {
             )) { Label("Read to Me", systemImage: "headphones") }.tint(AppColors.accent).foregroundColor(.white)
                 .onChange(of: vm.currentIndex) { _, _ in
                     if vm.isAutoPlay {
-                        audio.speak(vm.currentPage.narrationText, language: appState.language == .telugu ? "te-IN" : "en-US")
+                        audio.speak(vm.localizedNarration(vm.currentPage, lang: appState.language), language: appState.language == .telugu ? "te-IN" : "en-US")
                     }
                 }
                 .onDisappear { vm.stopAuto(); audio.stop() }

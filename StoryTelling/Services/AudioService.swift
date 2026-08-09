@@ -87,8 +87,9 @@ final class AudioService: NSObject, ObservableObject {
 
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = persona.voice(for: effectiveLang) ?? AVSpeechSynthesisVoice(language: effectiveLang)
-        // slower, clearer for kids
-        utterance.rate = baseRate * currentRate
+        // slower, clearer for kids — extra slow for Telugu for fluency
+        let langFactor: Float = (effectiveLang == "te-IN") ? 0.82 : 1.0
+        utterance.rate = baseRate * currentRate * langFactor
         utterance.pitchMultiplier = persona.pitch
         utterance.volume = 0.95
         utterance.preUtteranceDelay = 0.15

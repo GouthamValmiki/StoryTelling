@@ -59,7 +59,7 @@ struct AIStoryCreatorView: View {
             Button(action: generate) {
                 Label(isGenerating ? "Generating..." : "Generate Story ✨", systemImage: "wand.and.stars").frame(maxWidth: .infinity).padding().background(AppColors.gradientAccent, in: RoundedRectangle(cornerRadius: 14)).foregroundColor(.white).fontWeight(.bold)
             }.disabled(prompt.trimmingCharacters(in: .whitespaces).isEmpty || isGenerating)
-            if !(ai as? AIStoryService)?.isConfigured() ?? true {
+            if ((ai as? AIStoryService)?.isConfigured() ?? false) == false {
                 Text("Tip: Offline mode — generates a beautiful realistic daily-life story instantly. Add OPENAI_API_KEY for cloud AI.").font(.caption2).foregroundColor(.white.opacity(0.6))
             }
         }.padding(14).background(AppColors.card, in: RoundedRectangle(cornerRadius: 16))
