@@ -81,11 +81,12 @@ actor NaturalTTSService {
         let voice = cloudVoiceName(for: persona, language: language) // nova/onyx etc
         let openAIVoice = ["nova","shimmer","alloy","echo","fable","onyx"].contains(voice) ? voice : "nova"
         let body: [String: Any] = [
-            "model": "tts-1", // or tts-1-hd for highest naturalness
+            "model": "gpt-4o-mini-tts",
             "input": text,
             "voice": openAIVoice,
             "response_format": "mp3",
-            "speed": language == "te-IN" ? 0.92 : 0.95
+            "speed": language == "te-IN" ? 0.92 : 0.95,
+            "instructions": "Warm, expressive human storyteller. Use natural conversational pacing, gentle pauses between sentences, and clear emotional emphasis. Never sound robotic or rushed."
         ]
         req.httpBody = try JSONSerialization.data(withJSONObject: body)
         let (data, resp) = try await URLSession.shared.data(for: req)

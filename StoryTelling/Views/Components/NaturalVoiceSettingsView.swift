@@ -3,7 +3,7 @@ import Combine
 
 struct NaturalVoiceSettingsView: View {
     @AppStorage("voicePersona") private var personaRaw = "Female"
-    @AppStorage("useNaturalCloud") private var useNatural = false
+    @AppStorage("useNaturalCloud") private var useNatural = true
     @AppStorage("openai_api_key") private var openAIKey = ""
     @AppStorage("sarvam_api_key") private var sarvamKey = ""
     @State private var showInfo = false
@@ -53,7 +53,7 @@ struct NaturalVoiceSettingsView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("• Female/Male/Kid/Grandma/Grandpa changes pitch & speed to sound like that person.").font(.caption2).foregroundColor(.white.opacity(0.8))
                     Text("• Telugu uses te-IN voice when available, slower pace for fluency.").font(.caption2).foregroundColor(.white.opacity(0.8))
-                    Text("• Cloud voices (OpenAI TTS-1-HD / Sarvam Bulbul) sound studio-human.").font(.caption2).foregroundColor(.white.opacity(0.8))
+                    Text("• Cloud voices (OpenAI expressive TTS / Sarvam Bulbul) sound studio-human.").font(.caption2).foregroundColor(.white.opacity(0.8))
                 }.padding(8).background(Color.black.opacity(0.2), in: RoundedRectangle(cornerRadius: 10))
             }
         }
